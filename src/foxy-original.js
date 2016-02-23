@@ -30,11 +30,21 @@ FC.client.wrap("rejoinerCartData", function () {
 
 	//console.log("SETTING CART DATA");
 
+	//Check Coupon
+	if (!jQuery.isEmptyObject(FC.json.coupons)) {
+		jQuery.each(FC.json.coupons, function(i, coupon){
+			coupon_code = i;
+		});
+	} else {
+		coupon_code = "";
+	}
+
 	//Build Params
 	rejoiner_params = {
 		'value': FC.json.total_item_price,
 		'totalItems': FC.json.item_count,
 		'customer_order_number': FC.json.transaction_id,
+		'promo': coupon_code,
 		'returnUrl': 'https://' + FC.json.config.store_domain + '/checkout?fcsid=' + FC.json.session_id
 	};
 
@@ -107,4 +117,16 @@ FC.client.on('customer-email-update.done', function(){
 	if (_rejoiner._fc_email_set) {
 		FC.client.event("rejoinerCartData").trigger();
 	}
+});
+
+//When a coupon is added, send an update to Rejoiner
+FC.client.on('cart-coupon-add.done', function(){
+	//console.log("COUPON ADDED");
+	FC.client.event("rejoinerCartData").trigger();
+});
+
+//When a coupon is removed, send an update to Rejoiner
+FC.client.on('cart-coupon-remove.done', function(){
+	//console.log("COUPON REMOVED");
+	FC.client.event("rejoinerCartData").trigger();
 });
